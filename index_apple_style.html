@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nova-chat</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 850px;
+            height: 90vh;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 28px;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.25);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            animation: slideUp 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .header {
+            padding: 28px;
+            background: linear-gradient(135deg, #ffffff 0%, #f9f9fb 100%);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+            animation: slideDown 0.6s ease;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .header h1 {
+            font-size: 32px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 18px;
+            letter-spacing: -0.5px;
+        }
+        
+        .settings {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        
+        .setting {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            animation: fadeInUp 0.6s ease backwards;
+        }
+        
+        .setting:nth-child(1) { animation-delay: 0.1s; }
+        .setting:nth-child(2) { animation-delay: 0.2s; }
+        .setting:nth-child(3) { animation-delay: 0.3s; }
+        .setting:nth-child(4) { animation-delay: 0.4s; }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .setting label {
+            font-size: 11px;
+            font-weight: 700;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .setting input,
+        .setting select {
+            padding: 12px 14px;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            border-radius: 12px;
+            font-size: 14px;
+            font-family: inherit;
+            background: rgba(255, 255, 255, 0.6);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        
+        .setting input:focus,
+        .setting select:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15);
+            transform: scale(1.02);
+        }
+        
+        .quick-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 12px;
+        }
+        
+        .quick-btn {
+            padding: 8px 14px;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            color: #667eea;
+            transition: all 0.3s;
+            animation: popIn 0.4s ease backwards;
+        }
+        
+        .quick-btn:nth-child(1) { animation-delay: 0.5s; }
+        .quick-btn:nth-child(2) { animation-delay: 0.6s; }
+        .quick-btn:nth-child(3) { animation-delay: 0.7s; }
+        
+        @keyframes popIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        
+        .quick-btn:hover {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.2));
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.2);
+        }
+        
+        .chat-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: linear-gradient(180deg, #f9f9fb 0%, #ffffff 100%);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        
+        .welcome {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+        
+        .welcome h2 {
+            font-size: 28px;
+            color: #1d1d1d;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+        
+        .welcome p {
+            font-size: 16px;
+            color: #999;
+        }
+        
+        .message {
+            display: flex;
+            animation: fadeInMessage 0.4s ease-out;
+            margin-bottom: 8px;
+        }
+        
+        @keyframes fadeInMessage {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .message.user {
+            justify-content: flex-end;
+        }
+        
+        .msg-card {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            line-height: 1.5;
+            word-wrap: break-word;
+            font-size: 14px;
+            animation: messageBounce 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        
+        @keyframes messageBounce {
+            0% {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        
+        .user .msg-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 20px 20px 4px 20px;
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.2);
+        }
+        
+        .agent .msg-card {
+            background: white;
+            color: #1d1d1d;
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            border-radius: 20px 20px 20px 4px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        }
+        
+        .input-area {
+            padding: 16px 20px;
+            border-top: 1px solid rgba(0, 0, 0, 0.06);
+            display: flex;
+            gap: 12px;
+            background: linear-gradient(135deg, #ffffff 0%, #f9f9fb 100%);
+            animation: slideUp 0.6s ease;
+        }
+        
+        .input-box {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.03);
+            border-radius: 20px;
+            padding: 10px 18px;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            transition: all 0.3s;
+        }
+        
+        .input-box:focus-within {
+            background: white;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .input-box input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            font-size: 15px;
+            font-family: inherit;
+            outline: none;
+            color: #1d1d1d;
+        }
+        
+        .input-box input::placeholder {
+            color: #999;
+        }
+        
+        .send-btn {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.25);
+        }
+        
+        .send-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(102, 126, 234, 0.35);
+        }
+        
+        .send-btn:active {
+            transform: scale(0.95);
+        }
+        
+        .action-btns {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .action-btn {
+            width: 40px;
+            height: 40px;
+            background: rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 18px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .action-btn:hover {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.2);
+        }
+        
+        .loader {
+            display: flex;
+            gap: 6px;
+            padding: 4px 0;
+        }
+        
+        .dot {
+            width: 8px;
+            height: 8px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            animation: spin 1.4s infinite;
+        }
+        
+        .dot:nth-child(2) { animation-delay: 0.2s; }
+        .dot:nth-child(3) { animation-delay: 0.4s; }
+        
+        @keyframes spin {
+            0%, 60%, 100% {
+                opacity: 0.3;
+                transform: scale(0.8);
+            }
+            30% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        
+        .chat-area::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .chat-area::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 3px;
+        }
+        
+        .chat-area::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 0, 0, 0.4);
+        }
+        
+        @media (max-width: 600px) {
+            .container { height: 100vh; border-radius: 0; }
+            .msg-card { max-width: 85%; }
+            .settings { grid-template-columns: 1fr; }
+            .header h1 { font-size: 24px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>✨ Nova-chat</h1>
+            
+            <div class="settings">
+                <div class="setting">
+                    <label>Your Name</label>
+                    <input id="name" type="text" placeholder="Enter name">
+                </div>
+                <div class="setting">
+                    <label>Personality</label>
+                    <select id="personality">
+                        <option>Default</option>
+                        <option value="mother">👩 Mother</option>
+                        <option value="friend">👯 Friend</option>
+                        <option value="teacher">👨‍🏫 Teacher</option>
+                        <option value="entrepreneur">🚀 Entrepreneur</option>
+                        <option value="doctor">🏥 Doctor</option>
+                        <option value="comedian">😂 Comedian</option>
+                    </select>
+                </div>
+                <div class="setting">
+                    <label>Language</label>
+                    <select id="language">
+                        <option>English</option>
+                        <option>Spanish</option>
+                        <option>French</option>
+                        <option>German</option>
+                        <option>Hindi</option>
+                    </select>
+                </div>
+                <div class="setting">
+                    <label>Voice</label>
+                    <select id="voice">
+                        <option>OFF</option>
+                        <option>ON</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="quick-buttons">
+                <button class="quick-btn" onclick="ask('What is AI?')">💡 What is AI?</button>
+                <button class="quick-btn" onclick="ask('Tell me a joke')">😂 Tell me a joke</button>
+                <button class="quick-btn" onclick="ask('How are you?')">👋 How are you?</button>
+            </div>
+        </div>
+        
+        <div class="chat-area" id="chat">
+            <div class="welcome">
+                <h2>Welcome to AI Agent</h2>
+                <p>Choose a personality and start chatting!</p>
+            </div>
+        </div>
+        
+        <div class="input-area">
+            <div class="input-box">
+                <input id="input" type="text" placeholder="Ask me anything...">
+            </div>
+            <button class="send-btn" onclick="send()">↑</button>
+            <div class="action-btns">
+                <button class="action-btn" onclick="clear()" title="Clear">🗑️</button>
+                <button class="action-btn" onclick="download()" title="Save">💾</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let msgs = [];
+        
+        window.addEventListener('load', () => {
+            const saved = localStorage.getItem('prefs');
+            if (saved) {
+                const p = JSON.parse(saved);
+                document.getElementById('name').value = p.name || '';
+                document.getElementById('personality').value = p.personality || 'Default';
+                document.getElementById('language').value = p.language || 'English';
+            }
+        });
+        
+        function save() {
+            localStorage.setItem('prefs', JSON.stringify({
+                name: document.getElementById('name').value,
+                personality: document.getElementById('personality').value,
+                language: document.getElementById('language').value
+            }));
+        }
+        
+        function ask(q) {
+            document.getElementById('input').value = q;
+            send();
+        }
+        
+        async function send() {
+            const msg = document.getElementById('input').value.trim();
+            if (!msg) return;
+            
+            save();
+            addMsg('user', msg);
+            document.getElementById('input').value = '';
+            
+            const loading = document.createElement('div');
+            loading.className = 'message agent';
+            loading.innerHTML = '<div class="msg-card"><div class="loader"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>';
+            document.getElementById('chat').appendChild(loading);
+            document.getElementById('chat').scrollTop = document.getElementById('chat').scrollHeight;
+            
+            try {
+                const res = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        message: msg,
+                        personality: document.getElementById('personality').value,
+                        language: document.getElementById('language').value,
+                        userName: document.getElementById('name').value
+                    })
+                });
+                
+                const data = await res.json();
+                loading.remove();
+                
+                if (data.success) {
+                    addMsg('agent', data.response);
+                } else {
+                    addMsg('agent', '❌ Error: ' + data.error);
+                }
+            } catch (e) {
+                loading.remove();
+                addMsg('agent', '❌ Error: ' + e.message);
+            }
+        }
+        
+        function addMsg(role, text) {
+            msgs.push({role, text});
+            const div = document.createElement('div');
+            div.className = 'message ' + role;
+            div.innerHTML = '<div class="msg-card">' + text + '</div>';
+            document.getElementById('chat').appendChild(div);
+            document.getElementById('chat').scrollTop = document.getElementById('chat').scrollHeight;
+        }
+        
+        function clear() {
+            if (confirm('Clear all messages?')) {
+                msgs = [];
+                document.getElementById('chat').innerHTML = '<div class="welcome"><h2>Welcome to AI Agent</h2><p>Choose a personality and start chatting!</p></div>';
+            }
+        }
+        
+        function download() {
+            if (!msgs.length) {
+                alert('No messages to save!');
+                return;
+            }
+            const json = JSON.stringify(msgs, null, 2);
+            const blob = new Blob([json]);
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'chat_' + new Date().toISOString().split('T')[0] + '.json';
+            a.click();
+        }
+        
+        document.getElementById('input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') send();
+        });
+    </script>
+</body>
+</html>
